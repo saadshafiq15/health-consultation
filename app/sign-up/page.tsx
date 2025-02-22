@@ -89,7 +89,7 @@ export default function SignupPage() {
       });
       
       toast.success('Account created successfully!');
-      router.push('/dashboard'); // Redirect to dashboard after successful signup
+      router.push('/sign-in'); // Redirect to dashboard after successful signup
     } catch (error: any) {
       // Handle specific Firebase errors
       let errorMessage = 'Failed to create account';
@@ -216,7 +216,7 @@ export default function SignupPage() {
 
           <div className="text-center">
             <Link 
-              href="/login" 
+              href="/sign-in" 
               className="text-sm text-indigo-600 hover:text-indigo-500"
               tabIndex={isLoading ? -1 : 0}
             >
