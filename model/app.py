@@ -17,6 +17,7 @@ disease_precaution['Precautions'] = disease_precaution.apply(
     axis=1
 )
 
+#Use existing to send symptomps to the model
 
 
 # Create a dictionary for easy lookup
@@ -30,11 +31,8 @@ for _, row in disease_precaution.iterrows():
 for _, row in disease_description.iterrows():
     description_dict[row['Disease'].strip().lower()] = row['Description']
 
-@app.route('/')
-def home():
-    return render_template('index.html')
 
-@app.route('/diagnose', methods=['POST'])
+@app.route('/', methods=['POST'])
 def diagnose():
     data = request.get_json()
     symptoms = data['symptoms']
