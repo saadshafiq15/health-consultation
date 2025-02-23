@@ -5,7 +5,7 @@ import pandas as pd
 
 app = Flask(__name__)
 
-CORS(app, origins=["https://health-consultation.vercel.app/"])
+CORS(app, origins="*")
 
 # Load the trained model
 model = joblib.load('./disease_model.joblib')
@@ -76,4 +76,4 @@ def diagnose():
     })
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
