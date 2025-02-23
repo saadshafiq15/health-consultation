@@ -7,14 +7,10 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-const INITIAL_PROMPT = `Hello, I'm here to help you today. I'll ask you some questions about how you're feeling.`;
+const INITIAL_PROMPT = "Hello, I'm here to help you today. I'll ask you some questions about how you're feeling.";
 
 const QUESTIONS = [
   "What symptoms are you experiencing today?",
-  "How long have you had these symptoms?", 
-  "On a scale of 1-10, how severe is your discomfort?",
-  "Have you taken any medications for these symptoms?",
-  "Do these symptoms get worse at any particular time?"
 ];
 
 const SYMPTOMS_LIST = [' unsteadiness', ' puffy_face_and_eyes', ' brittle_nails', ' enlarged_thyroid', ' muscle_weakness', ' redness_of_eyes', ' fluid_overload', ' bloody_stool', ' cough', ' yellowing_of_eyes', ' high_fever', ' irregular_sugar_level', ' swollen_blood_vessels', ' headache', ' pain_in_anal_region', ' irritability', ' extra_marital_contacts', ' shivering', ' diarrhoea', ' irritation_in_anus', ' weakness_in_limbs', ' movement_stiffness', ' obesity', 'itching', ' swelling_of_stomach', ' acute_liver_failure', ' blood_in_sputum', ' patches_in_throat', ' dischromic patches', ' ulcers_on_tongue', ' excessive_hunger', ' muscle_pain', ' palpitations', ' stomach_bleeding', ' yellow_crust_ooze', ' receiving_unsterile_injections', ' skin_rash', ' joint_pain', ' skin_peeling', ' small_dents_in_nails', ' acidity', ' cramps', ' red_sore_around_nose', ' polyuria', ' bladder_discomfort', ' congestion', ' loss_of_balance', ' altered_sensorium', ' mood_swings', ' coma', ' weight_gain', ' sunken_eyes', ' pus_filled_pimples', ' bruising', ' hip_joint_pain', ' restlessness', ' depression', ' continuous_sneezing', ' chest_pain', ' sinus_pressure', ' muscle_wasting', ' yellowish_skin', ' spinning_movements', ' scurring', ' visual_disturbances', ' runny_nose', ' back_pain', ' swelling_joints', ' blister', ' foul_smell_of urine', ' stomach_pain', ' fast_heart_rate', ' dark_urine', ' indigestion', ' loss_of_appetite', ' distention_of_abdomen', ' painful_walking', ' yellow_urine', ' increased_appetite', ' breathlessness', ' drying_and_tingling_lips', ' toxic_look(typhos)', ' receiving_blood_transfusion', ' slurred_speech', ' blurred_and_distorted_vision', ' anxiety', ' dehydration', ' pain_behind_the_eyes', ' red_spots_over_body', ' knee_pain', ' lethargy', ' sweating', ' swollen_legs', ' abnormal_menstruation', ' fatigue', ' swollen_extremeties', ' inflammatory_nails', ' mild_fever', ' belly_pain', ' abdominal_pain', ' loss_of_smell', ' stiff_neck', ' vomiting', ' throat_irritation', ' family_history', ' cold_hands_and_feets', ' watering_from_eyes', ' malaise', ' dizziness', ' continuous_feel_of_urine', ' history_of_alcohol_consumption', ' phlegm', ' nausea', ' silver_like_dusting', ' chills', ' constipation', ' nodal_skin_eruptions', ' blackheads', ' swelled_lymph_nodes', ' prominent_veins_on_calf', ' rusty_sputum', ' passage_of_gases', ' weight_loss', ' spotting_ urination', ' lack_of_concentration', ' internal_itching', ' neck_pain', ' pain_during_bowel_movements', ' mucoid_sputum', ' burning_micturition', ' weakness_of_one_body_side'];
@@ -24,7 +20,7 @@ const AI_PROMPT = {
   parts: [
     {
       text: `
-      You are a medical assistant. Your task is to extract **only relevant symptoms** from a conversation.
+      Your task is to extract **only relevant symptoms** from a conversation.
       Symptoms must match one of the following predefined terms: ${SYMPTOMS_LIST.join(", ")}.
 
       If a symptom is mentioned using a synonym, map it to the correct term from the list.
@@ -32,7 +28,7 @@ const AI_PROMPT = {
       **Output format:**
       Return the symptoms as a JSON array, e.g.:
       {
-        "symptoms": ["headache", "cough", "fatigue"]
+        "symptoms": ["", "", ""]
       }
 
       If no symptoms are detected, return:
@@ -54,6 +50,7 @@ export default function ConsultationPage() {
   const [symptoms, setSymptoms] = useState<string[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [consultationComplete, setConsultationComplete] = useState(false);
+  const [diagnosis, setDiagnosis] = useState<any>(null);
 
   const speechRecognitionRef = useRef<any>(null);
   const speechSynthesisRef = useRef<SpeechSynthesis | null>(null);
@@ -98,6 +95,27 @@ export default function ConsultationPage() {
     setChatHistory(prev => [...prev, `AI: ${text}`]);
   };
 
+  const getDiagnosis = async (symptoms: string[]) => {
+    try {
+      const response = await fetch('http://localhost:5000/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ symptoms: symptoms.join(',') }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      setDiagnosis(data);
+    } catch (error) {
+      console.error('Error getting diagnosis:', error);
+    }
+  };
+
   const handleUserResponse = async () => {
     speechRecognitionRef.current?.stop();
     setIsListening(false);
@@ -113,6 +131,7 @@ export default function ConsultationPage() {
         const result = await chat.sendMessage(chatHistory.join('\n'));
         const extractedSymptoms = result.response.text().split(',').map(s => s.trim());
         setSymptoms(extractedSymptoms);
+        await getDiagnosis(extractedSymptoms);
         setShowResults(true);
         setConsultationComplete(true);
         
@@ -176,6 +195,16 @@ export default function ConsultationPage() {
                       <li key={i} className="text-gray-600">{symptom}</li>
                     ))}
                   </ul>
+                  {diagnosis && (
+                    <div className="mt-6">
+                      <h3 className="text-xl font-semibold text-gray-700">Diagnosis:</h3>
+                      <p className="text-gray-600">{diagnosis.disease}</p>
+                      <h4 className="text-lg font-semibold text-gray-700 mt-4">Description:</h4>
+                      <p className="text-gray-600">{diagnosis.description}</p>
+                      <h4 className="text-lg font-semibold text-gray-700 mt-4">Precautions:</h4>
+                      <p className="text-gray-600">{diagnosis.precautions}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

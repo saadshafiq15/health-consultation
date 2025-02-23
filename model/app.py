@@ -1,8 +1,11 @@
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 import joblib
 import pandas as pd
 
 app = Flask(__name__)
+
+CORS(app)
 
 # Load the trained model
 model = joblib.load('./disease_model.joblib')
@@ -35,11 +38,24 @@ for _, row in disease_description.iterrows():
 @app.route('/', methods=['POST'])
 def diagnose():
     data = request.get_json()
+    if not data or 'symptoms' not in data:
+        return jsonify({"error": "No symptoms provided"}), 400
+
     symptoms = data['symptoms']
-    predictions = model.predict([symptoms])
-    print(predictions)
-    prediction = model.predict([symptoms])[0]
-    precautions = precaution_dict.get(prediction.lower(), {})
+    print(symptoms)
+
+    try:
+        # Ensure the symptoms format is compatible with the model
+        prediction = model.predict([symptoms])[0]  # Extract first element # Ensure it's a 2D array
+        print(prediction)
+        prediction = prediction.lower()
+        print(prediction)
+    except Exception as e:
+        print("Prediction error:", str(e)) 
+        return jsonify({"error": str(e)}), 500
+    
+
+    precautions = precaution_dict.get(prediction, {})
 
     return jsonify({
         'disease': prediction,
@@ -49,4 +65,3 @@ def diagnose():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
