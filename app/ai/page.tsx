@@ -214,9 +214,34 @@ export default function ConsultationPage() {
     setConsultationComplete(true);
   };
 
-  const makeCall = () => {
-    window.location.href = 'tel:100';
+  const makeCall = async () => {
+    try {
+      const response = await fetch('/api/phone-call', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          doctorName: 'Dr. Smith',
+          doctorPhone: '+12265050962',
+          patientName: 'John Doe',
+          diagnosis: diagnosis.disease,
+          suggestedDate: new Date().toDateString(),
+          patientEmail: auth.currentUser?.email,
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to initiate call');
+      }
+  
+      const data = await response.json();
+      console.log('Call initiated:', data);
+    } catch (error) {
+      console.error('Error making call:', error);
+    }
   };
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
@@ -282,7 +307,7 @@ export default function ConsultationPage() {
                       onClick={makeCall}
                       className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold"
                     >
-                      Emergency Call
+                      Book Appoinment
                     </button>
                   </div>
                 </div>
