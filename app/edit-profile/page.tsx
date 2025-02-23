@@ -49,6 +49,15 @@ const FREQUENCY_OPTIONS = [
     'None'
 ];
 
+const formatDate = (timestamp: any) => {
+    if (!timestamp?.toDate) return '';
+    const date = timestamp.toDate();
+    return new Intl.DateTimeFormat('en-US', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+    }).format(date);
+};
+
 export default function UserProfilePage() {
     const [user] = useAuthState(auth);
     const [isEditing, setIsEditing] = useState(false);
@@ -429,6 +438,9 @@ export default function UserProfilePage() {
                                             } overflow-hidden`}
                                         >
                                             <div className="p-4 space-y-2 text-sm text-gray-600 border-t border-gray-200">
+                                                <div className="text-xs text-gray-500 mb-2">
+                                                    {formatDate(consultation.timestamp)}
+                                                </div>
                                                 <div className="whitespace-pre-wrap">
                                                     <span className="font-medium">Description: </span>
                                                     {consultation.description}
