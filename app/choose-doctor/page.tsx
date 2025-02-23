@@ -25,7 +25,7 @@ const DoctorSelection = () => {
       type: 'Therapist',
       description: 'Mental health support and therapy sessions.',
       icon: '🧠',
-      path: '/ai',
+      path: '/therapist',
       bgColor: 'bg-green-600',
       hoverColor: 'hover:bg-green-700'
     }
