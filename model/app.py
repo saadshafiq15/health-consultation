@@ -57,10 +57,22 @@ def diagnose():
 
     precautions = precaution_dict.get(prediction, {})
 
+    precaution = None
+    description = None
+
+    if "hypertension" in prediction.lower():
+        precaution = "meditation,salt baths,reduce stress,get proper sleep"
+        description = "Hypertension is a condition in which the force of the blood against the artery walls is too high. Usually hypertension is defined as blood pressure above 140/90, and is considered severe if the pressure is above 180/120."
+    elif "diabetes" in prediction.lower():
+        precaution = "eat healthy foods,exercise regularly,monitor blood sugar,monitor blood pressure"
+        description = "Diabetes is a disease that occurs when your blood glucose, also called blood sugar, is too high. Blood glucose is your main source of energy and comes from the food you eat."
+    else:
+        precaution = precautions.get('Precautions', 'Not available')
+        description = description_dict.get(prediction, 'Not available')
     return jsonify({
         'disease': prediction,
-        'precautions': precautions.get('Precautions', 'Not available'),
-        'description': description_dict.get(prediction.lower(), 'Not available')
+        'precautions': precaution,
+        'description': description
     })
 
 if __name__ == '__main__':
