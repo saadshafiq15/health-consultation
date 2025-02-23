@@ -6,12 +6,16 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '@/firebase/config';
 import toast from 'react-hot-toast';
 import Image from 'next/image'; // Import Image component from Next.js
+import Link from 'next/link';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/firebase/config';
 
 
 export default function HomePage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -27,6 +31,34 @@ export default function HomePage() {
       toast.success('Signed out successfully');
     } catch (error) {
       toast.error('Error signing out');
+    }
+  };
+
+  const handleStartConsultation = async () => {
+    if (!user) return;
+
+    try {
+      // Check if user profile exists
+      const profileDocRef = doc(db, "users", user.uid, "data", "profile");
+      const profileDoc = await getDoc(profileDocRef);
+
+      if (!profileDoc.exists() || !profileDoc.data().name) {
+        // If profile doesn't exist or name is empty, redirect to user profile
+        router.push('/user-profile');
+        toast('Please complete your profile first', {
+          icon: 'ℹ️',
+          style: {
+            background: '#3b82f6',
+            color: '#fff',
+          }
+        });
+      } else {
+        // If profile exists, proceed to consultation
+        router.push('/choose-doctor');
+      }
+    } catch (error) {
+      console.error('Error checking profile:', error);
+      toast.error('Something went wrong');
     }
   };
 
@@ -47,13 +79,28 @@ export default function HomePage() {
             <div>
               {user ? (
                 <div className="flex items-center space-x-4">
-                  <span className="text-gray-700">{user.displayName || user.email.split('@')[0]}</span> {/* Display user's name or part of email */}
-                  <button
-                    onClick={handleSignOut}
-                    className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700"
-                  >
-                    Sign Out
-                  </button>
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsMenuOpen(!isMenuOpen)}
+                      className="p-2 rounded-full hover:bg-gray-100 transition-colors flex items-center gap-2"
+                    >
+                      <span className="text-gray-700">{user.displayName || user.email.split('@')[0]}</span>
+                      <span className="text-gray-900">👤</span>
+                    </button>
+                    {isMenuOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+                        <Link href="/edit-profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                          User Profile
+                        </Link>
+                        <button 
+                          onClick={handleSignOut} 
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div className="flex space-x-4">
@@ -84,7 +131,7 @@ export default function HomePage() {
         {user ? (
           <div className="mt-6">
             <button
-              onClick={() => router.push('/ai')}
+              onClick={handleStartConsultation}
               className="px-6 py-3 text-base font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
             >
               Start Consultation

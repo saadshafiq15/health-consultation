@@ -2,13 +2,30 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import toast from 'react-hot-toast';
+import { auth } from '@/firebase/config';
+import { useRouter } from 'next/navigation';
 
 const ConsultationSummary = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const router = useRouter();
 
     const handleSendEmail = () => {
         alert('Report sent to your email!');
     };
+
+    const handleSignOut = async () => {
+        try {
+            await signOut(auth);
+            setTimeout(() => {
+                router.push('http://localhost:3000');
+            }, 1000);
+        } catch (error) {
+          toast.error('Error signing out');
+        }
+    };
+    
 
     return (
         <div className="min-h-screen w-screen bg-gray-50 p-6 flex flex-col items-center">
@@ -23,8 +40,8 @@ const ConsultationSummary = () => {
                     </button>
                     {isMenuOpen && (
                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
-                            <Link href="../edit-profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">User Profile</Link>
-                            <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
+                            <Link href="/edit-profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">User Profile</Link>
+                            <button onClick={handleSignOut} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
                         </div>
                     )}
                 </div>

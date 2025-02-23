@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Bot, Heart, Activity, Stethoscope } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { useRouter } from 'next/navigation';
 
 // Add at the top of the file, after the imports
 declare global {
@@ -65,6 +66,7 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode, titl
 }
 
 export default function ConsultationPage() {
+  const router = useRouter();
   const [currentMessage, setCurrentMessage] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -72,9 +74,7 @@ export default function ConsultationPage() {
   const [chatHistory, setChatHistory] = useState<string[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [symptoms, setSymptoms] = useState<string[]>([]);
-  const [showResults, setShowResults] = useState(false);
   const [consultationComplete, setConsultationComplete] = useState(false);
-  const [diagnosis, setDiagnosis] = useState<any>(null);
 
   const speechRecognitionRef = useRef<any>(null);
   const speechSynthesisRef = useRef<SpeechSynthesis | null>(null);
@@ -134,7 +134,7 @@ export default function ConsultationPage() {
       }
 
       const data = await response.json();
-      setDiagnosis(data);
+      setSymptoms(data.symptoms);
     } catch (error) {
       console.error('Error getting diagnosis:', error);
     }
@@ -154,10 +154,7 @@ export default function ConsultationPage() {
         
         const result = await chat.sendMessage(chatHistory.join('\n'));
         const extractedSymptoms = result.response.text().split(',').map(s => s.trim());
-        setSymptoms(extractedSymptoms);
         await getDiagnosis(extractedSymptoms);
-        setShowResults(true);
-        setConsultationComplete(true);
         
         speak("Thank you for sharing all this information. I've recorded your symptoms. This consultation is now complete.");
         setIsStarted(false);
@@ -172,141 +169,128 @@ export default function ConsultationPage() {
   const startConsultation = async () => {
     if (consultationComplete) return;
     setIsStarted(true);
-    setShowResults(false);
     speak(QUESTIONS[0]);
+  };
+
+  const handleEndConsultation = () => {
+    speechRecognitionRef.current?.stop();
+    speechSynthesisRef.current?.cancel();
+    setIsStarted(false);
+    setIsListening(false);
+    setIsSpeaking(false);
+    setConsultationComplete(true);
+    router.push('/summary');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-4 flex items-center justify-center">
       <div className="max-w-2xl mx-auto">
-        {!showResults ? (
-          !isStarted ? (
-            <div className="p-4">
-              <div className="max-w-4xl mx-auto">
-                <div className="text-center mb-8">
-                  <div className="flex justify-center mb-4">
-                    <div className="relative">
-                      <div className="w-16 h-16 bg-blue-600 rounded-xl rotate-45 transform transition-transform hover:rotate-[60deg]">
-                        <div className="absolute inset-0 -rotate-45 flex items-center justify-center">
-                          <Bot className="w-8 h-8 text-white" />
-                        </div>
+        {!isStarted ? (
+          <div className="p-4">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-8">
+                <div className="flex justify-center mb-4">
+                  <div className="relative">
+                    <div className="w-16 h-16 bg-blue-600 rounded-xl rotate-45 transform transition-transform hover:rotate-[60deg]">
+                      <div className="absolute inset-0 -rotate-45 flex items-center justify-center">
+                        <Bot className="w-8 h-8 text-white" />
                       </div>
                     </div>
                   </div>
-                  <h1 className="text-4xl font-bold text-gray-800 mb-2">AI Medical Assistant</h1>
-                  <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                    Experience the future of healthcare with our AI-powered medical consultation
-                  </p>
                 </div>
-
-                <div className="flex flex-col items-center gap-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-6">
-                    <FeatureCard 
-                      icon={<Heart className="w-8 h-8 text-red-500" />}
-                      title="Smart Diagnosis"
-                      description="Advanced AI analysis for accurate symptom assessment"
-                    />
-                    <FeatureCard 
-                      icon={<Activity className="w-8 h-8 text-blue-500" />}
-                      title="Real-time Analysis"
-                      description="Instant processing of your medical concerns"
-                    />
-                    <FeatureCard 
-                      icon={<Stethoscope className="w-8 h-8 text-green-500" />}
-                      title="Medical Expertise"
-                      description="Backed by comprehensive medical knowledge"
-                    />
-                  </div>
-
-                  {!consultationComplete && (
-                    <div className="relative group">
-                      <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-blue-400 rounded-lg blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-                      <button
-                        onClick={startConsultation}
-                        className="relative px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-lg font-semibold transition-all duration-200 transform hover:scale-105 hover:shadow-xl flex items-center gap-2"
-                      >
-                        <Bot className="w-5 h-5" />
-                        Start Consultation
-                      </button>
-                    </div>
-                  )}
-                  
-                  <div className="bg-gray-100 px-4 py-3 rounded-xl text-gray-700 text-center max-w-lg shadow-md transition-transform duration-300 hover:scale-105 flex items-center gap-2">
-                    <span className="text-xl">🛡️</span> 
-                    <span className="text-sm">Disclaimer: Any information you provide is strictly for the purpose of assisting you and remains safe and confidential.</span>
-                  </div>
-                </div>
+                <h1 className="text-4xl font-bold text-gray-800 mb-2">AI Medical Assistant</h1>
+                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                  Experience the future of healthcare with our AI-powered medical consultation
+                </p>
               </div>
-            </div>
-          ) : (
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="mb-8 flex flex-col items-center">
-                {isSpeaking && (
-                  <div className="text-6xl text-blue-500 animate-bounce mb-4">
-                    🎙️
+
+              <div className="flex flex-col items-center gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-6">
+                  <FeatureCard 
+                    icon={<Heart className="w-8 h-8 text-red-500" />}
+                    title="Smart Diagnosis"
+                    description="Advanced AI analysis for accurate symptom assessment"
+                  />
+                  <FeatureCard 
+                    icon={<Activity className="w-8 h-8 text-blue-500" />}
+                    title="Real-time Analysis"
+                    description="Instant processing of your medical concerns"
+                  />
+                  <FeatureCard 
+                    icon={<Stethoscope className="w-8 h-8 text-green-500" />}
+                    title="Medical Expertise"
+                    description="Backed by comprehensive medical knowledge"
+                  />
+                </div>
+
+                {!consultationComplete && (
+                  <div className="relative group">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-blue-400 rounded-lg blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+                    <button
+                      onClick={startConsultation}
+                      className="relative px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-lg font-semibold transition-all duration-200 transform hover:scale-105 hover:shadow-xl flex items-center gap-2"
+                    >
+                      <Bot className="w-5 h-5" />
+                      Start Consultation
+                    </button>
                   </div>
                 )}
-                <div className="bg-gray-100 p-4 rounded-lg w-full">
-                  <p className="text-xl text-gray-800">{currentMessage || "Listening..."}</p>
+                
+                <div className="bg-gray-100 px-4 py-3 rounded-xl text-gray-700 text-center max-w-lg shadow-md transition-transform duration-300 hover:scale-105 flex items-center gap-2">
+                  <span className="text-xl">🛡️</span> 
+                  <span className="text-sm">Disclaimer: Any information you provide is strictly for the purpose of assisting you and remains safe and confidential.</span>
                 </div>
               </div>
-
-              <div className="space-y-4 mb-8 max-h-96 overflow-y-auto">
-                {chatHistory.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`p-4 rounded-lg ${
-                      message.startsWith('AI:') 
-                        ? 'bg-blue-100 text-blue-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
-                  >
-                    {message}
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex justify-center gap-4">
-                <button
-                  onClick={handleUserResponse}
-                  disabled={isSpeaking}
-                  className={`px-6 py-3 rounded-lg ${
-                    isListening 
-                      ? 'bg-red-600 hover:bg-red-700' 
-                      : 'bg-blue-600 hover:bg-blue-700'
-                  } text-white transition-colors ${
-                    isSpeaking ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                >
-                  {isListening ? 'Stop Speaking' : 'Start Speaking'}
-                </button>
-                <button
-                  onClick={() => {
-                    speechRecognitionRef.current?.stop();
-                    speechSynthesisRef.current?.cancel();
-                    setIsStarted(false);
-                    setIsListening(false);
-                    setIsSpeaking(false);
-                    setShowResults(true);
-                    setConsultationComplete(true);
-                  }}
-                  className="px-6 py-3 rounded-lg bg-gray-600 hover:bg-gray-700 text-white transition-colors"
-                >
-                  End Consultation
-                </button>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="mb-8 flex flex-col items-center">
+              {isSpeaking && (
+                <div className="text-6xl text-blue-500 animate-bounce mb-4">
+                  🎙️
+                </div>
+              )}
+              <div className="bg-gray-100 p-4 rounded-lg w-full">
+                <p className="text-xl text-gray-800">{currentMessage || "Listening..."}</p>
               </div>
             </div>
-          )
-        ) : (
-          <div className="mt-8 bg-white p-8 rounded-lg shadow-lg">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Consultation Summary</h2>
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold text-gray-700">Identified Symptoms:</h3>
-              <ul className="list-disc  pl-5 space-y-2">
-                {symptoms.map((symptom, i) => (
-                  <li key={i} className="text-gray-600">{symptom}</li>
-                ))}
-              </ul>
+
+            <div className="space-y-4 mb-8 max-h-96 overflow-y-auto">
+              {chatHistory.map((message, index) => (
+                <div
+                  key={index}
+                  className={`p-4 rounded-lg ${
+                    message.startsWith('AI:') 
+                      ? 'bg-blue-100 text-blue-800' 
+                      : 'bg-gray-100 text-gray-800'
+                  }`}
+                >
+                  {message}
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={handleUserResponse}
+                disabled={isSpeaking}
+                className={`px-6 py-3 rounded-lg ${
+                  isListening 
+                    ? 'bg-red-600 hover:bg-red-700' 
+                    : 'bg-blue-600 hover:bg-blue-700'
+                } text-white transition-colors ${
+                  isSpeaking ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                {isListening ? 'Stop Speaking' : 'Start Speaking'}
+              </button>
+              <button
+                onClick={handleEndConsultation}
+                className="px-6 py-3 rounded-lg bg-gray-600 hover:bg-gray-700 text-white transition-colors"
+              >
+                End Consultation
+              </button>
             </div>
           </div>
         )}
