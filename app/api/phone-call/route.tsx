@@ -18,7 +18,7 @@ function generateTwiML(doctorName: string, patientName: string, diagnosis: strin
 				We would like to schedule an appointment for ${patientName} on ${suggestedDate}.
 				If this time works for you, press 1 to confirm. If you would like to suggest a different time, press 2.
 			</Say>
-			<Gather numDigits="1" action="https://2598-216-249-49-22.ngrok-free.app/api/process-response?patientEmail=${encodeURIComponent(patientEmail)}" method="POST">
+			<Gather numDigits="1" action="${process.env.WEBHOOK_URL}/api/process-response?patientEmail=${encodeURIComponent(patientEmail)}" method="POST">
 				<Say>Press 1 to confirm the appointment. Press 2 to suggest another time.</Say>
 			</Gather>
 		</Response>`;
@@ -33,6 +33,7 @@ export async function POST(request: Request) {
 		const twiml = generateTwiML(doctorName, patientName, diagnosis, suggestedDate, patientEmail);
 		const response = await client.calls.create({
 			to: doctorPhone,
+			//@ts-expect-error
 			from: twilioPhone,
 			twiml
 		});
