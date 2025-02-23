@@ -1,18 +1,23 @@
 'use client';
-
+import toast from 'react-hot-toast';
 import { useState } from 'react';
 import Link from 'next/link';
+import { auth } from '@/firebase/config';
+import { useRouter } from 'next/navigation';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+
 
 const DoctorSelection = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const router = useRouter();
 
   const doctorTypes = [
     {
       type: 'Family Doctor',
       description: 'General health consultations and primary care.',
       icon: '👨‍⚕️',
-      path: '/consultation/doctor',
+      path: '/ai',
       bgColor: 'bg-blue-600',
       hoverColor: 'hover:bg-blue-700'
     },
@@ -20,17 +25,22 @@ const DoctorSelection = () => {
       type: 'Therapist',
       description: 'Mental health support and therapy sessions.',
       icon: '🧠',
-      path: '/consultation/therapist',
+      path: '/ai',
       bgColor: 'bg-green-600',
       hoverColor: 'hover:bg-green-700'
     }
   ];
 
-  const handleLogout = () => {
-    // Add your logout logic here
-    console.log('User logged out');
-    setShowLogoutDialog(false);
-  };
+  const handleSignOut = async () => {
+    try {
+        await signOut(auth);
+        setTimeout(() => {
+            router.push('http://localhost:3000');
+        }, 1000);
+    } catch (error) {
+      toast.error('Error signing out');
+    }
+};
 
   return (
     <div className="min-h-screen w-screen bg-gray-50">
@@ -82,7 +92,7 @@ const DoctorSelection = () => {
                 Stay
               </button>
               <button
-                onClick={handleLogout}
+                onClick={handleSignOut}
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               >
                 Logout

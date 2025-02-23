@@ -88,8 +88,22 @@ export default function SignupPage() {
         createdAt: Timestamp.now(),
       });
       
+      // Create initial empty profile
+      const userDocRef = doc(db, "users", userCredential.user.uid, "data", "profile");
+      await setDoc(userDocRef, {
+        name: "",
+        age: "",
+        height: "",
+        weight: "",
+        prescriptions: [],
+        history: "",
+        emergency_contact_name: "",
+        emergency_contact_number: "",
+        consultationHistory: []
+      });
+      
       toast.success('Account created successfully!');
-      router.push('/sign-in'); // Redirect to dashboard after successful signup
+      router.push('/user-profile'); // Redirect to user profile instead of edit-profile
     } catch (error: any) {
       // Handle specific Firebase errors
       let errorMessage = 'Failed to create account';
