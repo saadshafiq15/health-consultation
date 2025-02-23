@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useRouter } from 'next/navigation';
+import { db } from '@/firebase/config';
+import { collection, addDoc, doc, Timestamp } from 'firebase/firestore';
+import { auth } from '@/firebase/config';
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY!);
@@ -113,6 +116,26 @@ export default function ConsultationPage() {
     setChatHistory(prev => [...prev, `AI: ${text}`]);
   };
 
+  const saveToFirestore = async (diagnosisData: any) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const userDocRef = doc(db, 'users', user.uid);
+      const consultationsCollectionRef = collection(userDocRef, 'consultations');
+      
+      await addDoc(consultationsCollectionRef, {
+        diagnosis: diagnosisData.disease,
+        description: diagnosisData.description,
+        precautions: diagnosisData.precautions,
+        timestamp: Timestamp.now()
+      });
+
+    } catch (error) {
+      console.error('Error saving to Firestore:', error);
+    }
+  };
+
   const getDiagnosis = async (symptoms: string[]) => {
     try {
       const response = await fetch('http://localhost:5000/', {
@@ -130,6 +153,7 @@ export default function ConsultationPage() {
       const data = await response.json();
       
       setDiagnosis(data);
+      await saveToFirestore(data);
     } catch (error) {
       console.error('Error getting diagnosis:', error);
     }
