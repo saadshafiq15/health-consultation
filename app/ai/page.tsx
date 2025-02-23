@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useRouter } from 'next/navigation';
 
+
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
@@ -66,9 +67,7 @@ export default function ConsultationPage() {
   const [chatHistory, setChatHistory] = useState<string[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [symptoms, setSymptoms] = useState<string[]>([]);
-  const [showResults, setShowResults] = useState(false);
   const [consultationComplete, setConsultationComplete] = useState(false);
-  const [diagnosis, setDiagnosis] = useState<any>(null);
 
   const speechRecognitionRef = useRef<any>(null);
   const speechSynthesisRef = useRef<SpeechSynthesis | null>(null);
@@ -128,7 +127,7 @@ export default function ConsultationPage() {
       }
 
       const data = await response.json();
-      setDiagnosis(data);
+      setSymptoms(data.symptoms);
     } catch (error) {
       console.error('Error getting diagnosis:', error);
     }
@@ -148,10 +147,7 @@ export default function ConsultationPage() {
         
         const result = await chat.sendMessage(chatHistory.join('\n'));
         const extractedSymptoms = result.response.text().split(',').map(s => s.trim());
-        setSymptoms(extractedSymptoms);
         await getDiagnosis(extractedSymptoms);
-        setShowResults(true);
-        setConsultationComplete(true);
         
         speak("Thank you for sharing all this information. I've recorded your symptoms. This consultation is now complete.");
         setIsStarted(false);
@@ -166,9 +162,9 @@ export default function ConsultationPage() {
   const startConsultation = async () => {
     if (consultationComplete) return;
     setIsStarted(true);
-    setShowResults(false);
     speak(QUESTIONS[0]);
   };
+
 
   const toggleListening = () => {
     if (isListening) {
@@ -180,11 +176,13 @@ export default function ConsultationPage() {
   };
 
   const endConsultation = () => {
+
     speechRecognitionRef.current?.stop();
     speechSynthesisRef.current?.cancel();
     setIsStarted(false);
     setIsListening(false);
     setIsSpeaking(false);
+
     setShowResults(true);
     setConsultationComplete(true);
   };
@@ -258,10 +256,17 @@ export default function ConsultationPage() {
                       className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold"
                     >
                       Emergency Call
+
                     </button>
                   </div>
+                )}
+                
+                <div className="bg-gray-100 px-4 py-3 rounded-xl text-gray-700 text-center max-w-lg shadow-md transition-transform duration-300 hover:scale-105 flex items-center gap-2">
+                  <span className="text-xl">🛡️</span> 
+                  <span className="text-sm">Disclaimer: Any information you provide is strictly for the purpose of assisting you and remains safe and confidential.</span>
                 </div>
               </div>
+
             )}
           </div>
         ) : (
@@ -287,12 +292,14 @@ export default function ConsultationPage() {
                     message.startsWith('AI:') 
                       ? 'bg-blue-50 text-blue-900 border-l-4 border-blue-500' 
                       : 'bg-gray-50 text-gray-800 border-l-4 border-gray-500'
+
                   }`}
                 >
                   {message}
                 </div>
               ))}
             </div>
+
 
             <div className="flex justify-center gap-6">
               <button
@@ -311,6 +318,7 @@ export default function ConsultationPage() {
               <button
                 onClick={endConsultation}
                 className="px-8 py-4 rounded-xl bg-gray-600 hover:bg-gray-700 text-white font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+
               >
                 End Consultation
               </button>
