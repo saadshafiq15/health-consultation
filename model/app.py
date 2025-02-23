@@ -5,7 +5,7 @@ import pandas as pd
 
 app = Flask(__name__)
 
-CORS(app)
+CORS(app, , origins=["https://health-consultation.vercel.app/"])
 
 # Load the trained model
 model = joblib.load('./disease_model.joblib')
