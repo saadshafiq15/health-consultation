@@ -91,6 +91,7 @@ export default function UserProfilePage() {
                 const consultations: Consultation[] = [];
                 consultationsSnapshot.forEach((doc) => {
                     consultations.push({
+                        //@ts-expect-error
                         id: doc.id,
                         ...doc.data() as Consultation
                     });
@@ -122,6 +123,7 @@ export default function UserProfilePage() {
     const handleInputChange = (field: string, value: string) => {
         setFormData((prevData) => {
             const newData = { ...prevData };
+            //@ts-expect-error
             newData[field] = value;
             return newData;
         });

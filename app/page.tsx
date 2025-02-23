@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { auth } from '@/firebase/config';
 import toast from 'react-hot-toast';
 import Image from 'next/image'; // Import Image component from Next.js
@@ -13,7 +13,7 @@ import { db } from '@/firebase/config';
 
 export default function HomePage() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -84,7 +84,8 @@ export default function HomePage() {
                       onClick={() => setIsMenuOpen(!isMenuOpen)}
                       className="p-2 rounded-full hover:bg-gray-100 transition-colors flex items-center gap-2"
                     >
-                      <span className="text-gray-700">{user.displayName || user.email.split('@')[0]}</span>
+                      
+                      <span className="text-gray-700">{user.displayName || (user.email ? user.email.split('@')[0] : 'User')}</span>
                       <span className="text-gray-900">👤</span>
                     </button>
                     {isMenuOpen && (

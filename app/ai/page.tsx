@@ -78,6 +78,7 @@ export default function ConsultationPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      //@ts-expect-error
       speechRecognitionRef.current = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
       speechRecognitionRef.current.continuous = true;
       speechRecognitionRef.current.interimResults = true;
@@ -85,6 +86,7 @@ export default function ConsultationPage() {
 
       speechRecognitionRef.current.onresult = (event: any) => {
         const transcript = Array.from(event.results)
+        //@ts-expect-error
           .map(result => result[0])
           .map(result => result.transcript)
           .join('');
@@ -138,7 +140,7 @@ export default function ConsultationPage() {
 
   const getDiagnosis = async (symptoms: string[]) => {
     try {
-      const response = await fetch('http://localhost:5000/', {
+      const response = await fetch('https://health-consultation.onrender.com', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
