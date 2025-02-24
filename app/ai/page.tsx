@@ -140,7 +140,7 @@ export default function ConsultationPage() {
 
   const getDiagnosis = async (symptoms: string[]) => {
     try {
-      const response = await fetch('https://health-consultation.onrender.com', {
+      const response = await fetch('http://localhost:5000', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -226,7 +226,7 @@ export default function ConsultationPage() {
         body: JSON.stringify({
           doctorName: 'Dr. Smith',
           doctorPhone: '+12265050962',
-          patientName: 'John Doe',
+          patientName: 'Jashanjot Singh',
           diagnosis: diagnosis.disease,
           suggestedDate: new Date().toDateString(),
           patientEmail: auth.currentUser?.email,
@@ -303,7 +303,7 @@ export default function ConsultationPage() {
                       onClick={() => router.push('/edit-profile')}
                       className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold"
                     >
-                      Edit Profile
+                      View Profile
                     </button>
                     <button
                       onClick={makeCall}
