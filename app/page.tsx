@@ -118,7 +118,7 @@ export default function HomePage() {
         ) : (
           <div className="mt-6">
             <button
-              onClick={() => router.push('/sign-up')}
+              onClick={handleStartConsultation}
               className="px-6 py-3 text-base font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
             >
               Get Started
