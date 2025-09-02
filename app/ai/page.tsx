@@ -11,7 +11,7 @@ import { auth } from '@/firebase/config';
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY!);
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 const INITIAL_PROMPT = "Hello, I'm here to help you today. I'll ask you some questions about how you're feeling.";
 
@@ -140,28 +140,52 @@ export default function ConsultationPage() {
     }
   };
 
-  const getDiagnosis = async (symptoms: string[]) => {
-    try {
-      const response = await fetch('http://localhost:5000', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ symptoms: symptoms.join(',') }),
-      });
+    const DIAGNOSIS_PROMPT = (symptoms: string[]) => ({
+    role: "user",
+    parts: [
+        {
+        text: `
+    You are a medical assistant. Based on the following symptoms, provide:
+    - The most likely diagnosis (disease name)
+    - A brief description of the disease
+    - Recommended precautions
 
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
+    Symptoms: ${symptoms.join(", ")}
 
-      const data = await response.json();
-      
-      setDiagnosis(data);
-      await saveToFirestore(data);
-    } catch (error) {
-      console.error('Error getting diagnosis:', error);
+    Output format (strict JSON):
+    {
+    "disease": "disease_name",
+    "description": "short description",
+    "precautions": "recommended precautions"
     }
-  };
+    If you cannot diagnose, return:
+    {
+    "disease": "Unknown",
+    "description": "Unable to determine based on provided symptoms.",
+    "precautions": "Consult a healthcare professional."
+    }
+        `,
+        },
+    ],
+    });
+
+    const getDiagnosis = async (symptoms: string[]) => {
+    try {
+        const chat = await model.startChat({
+        history: [DIAGNOSIS_PROMPT(symptoms)],
+        });
+        const result = await chat.sendMessage('');
+        const text = result.response.text();
+        const match = text.match(/\{[\s\S]*\}/);
+        const jsonStr = match ? match[0] : '{}';
+        const data = JSON.parse(jsonStr);
+
+        setDiagnosis(data);
+        await saveToFirestore(data);
+    } catch (error) {
+        console.error('Error getting diagnosis:', error);
+    }
+    };
 
   const handleUserResponse = async () => {
     speechRecognitionRef.current?.stop();
