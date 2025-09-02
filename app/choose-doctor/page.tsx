@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 'use client';
 import toast from 'react-hot-toast';
 import { useState } from 'react';

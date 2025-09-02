@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -6,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { db } from '@/firebase/config';
 import { collection, addDoc, doc, Timestamp } from 'firebase/firestore';
 import { auth } from '@/firebase/config';
+
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY!);
