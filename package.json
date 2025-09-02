@@ -2,6 +2,8 @@
   "name": "health-consultation",
   "version": "0.1.0",
   "private": true,
+  "main": "app/page.tsx",
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "NEXT_DISABLE_TYPECHECK=1 next build --no-lint",

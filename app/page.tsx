@@ -35,31 +35,7 @@ export default function HomePage() {
   };
 
   const handleStartConsultation = async () => {
-    if (!user) return;
-
-    try {
-      // Check if user profile exists
-      const profileDocRef = doc(db, "users", user.uid, "data", "profile");
-      const profileDoc = await getDoc(profileDocRef);
-
-      if (!profileDoc.exists() || !profileDoc.data().name) {
-        // If profile doesn't exist or name is empty, redirect to user profile
-        router.push('/user-profile');
-        toast('Please complete your profile first', {
-          icon: 'ℹ️',
-          style: {
-            background: '#3b82f6',
-            color: '#fff',
-          }
-        });
-      } else {
-        // If profile exists, proceed to consultation
-        router.push('/choose-doctor');
-      }
-    } catch (error) {
-      console.error('Error checking profile:', error);
-      toast.error('Something went wrong');
-    }
+    router.push('/choose-doctor');
   };
 
   if (loading) {
