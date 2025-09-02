@@ -1,6 +1,6 @@
-export const dynamic = "force-dynamic";
-
 'use client';
+
+export const dynamic = "force-dynamic";
 import toast from 'react-hot-toast';
 import { useState } from 'react';
 import Link from 'next/link';
