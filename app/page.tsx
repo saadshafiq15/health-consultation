@@ -52,7 +52,7 @@ export default function HomePage() {
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
-            <div className="text-xl font-bold text-indigo-600">AI Doctor Consultation</div>
+            <div className="text-xl font-bold text-indigo-600">TriageAI</div>
             <div>
               {user ? (
                 <div className="flex items-center space-x-4">
@@ -102,9 +102,9 @@ export default function HomePage() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-6">Your AI-Powered Doctor at Your Fingertips</h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-6">Your AI-Powered Nurse at Your Fingertips</h1>
         <p className="text-lg text-gray-700 max-w-2xl mx-auto">
-          Get instant medical advice from our advanced AI doctor. Available 24/7 to answer your health concerns and provide guidance.
+         Get instant medical advice from an AI-powered nurse, with consultation data automatically sent to your doctor.
         </p>
         {user ? (
           <div className="mt-6">
@@ -132,7 +132,7 @@ export default function HomePage() {
           <h2 className="text-3xl font-bold text-indigo-600 mb-6">Breaking Barriers in Canadian Healthcare</h2>
           <p className="text-lg text-gray-700 max-w-3xl">
             Long wait times in hospitals and the difficulty of securing timely appointments with family doctors are common challenges in Canada.
-            Our AI Doctor app provides a seamless solution by offering immediate consultations, reducing unnecessary ER visits, and ensuring you get the right medical guidance when you need it most.
+            Delivers instant consultations, minimizes unnecessary nurse interactions, and securely shares accurate patient data with doctors.
           </p>
         </div>
         <div className="mt-6 md:mt-0 flex justify-center">
@@ -145,7 +145,7 @@ export default function HomePage() {
           <h2 className="text-3xl font-bold text-indigo-600 mb-6">What Our Users Say</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="bg-gray-100 p-6 rounded-lg shadow">
-              <p className="text-gray-700 italic">"The AI doctor helped me understand my symptoms in minutes! Highly recommend!"</p>
+              <p className="text-gray-700 italic">"The AI nurse helped me understand my symptoms in minutes! Highly recommend!"</p>
               <p className="mt-4 font-semibold">- Sarah L.</p>
             </div>
             <div className="bg-gray-100 p-6 rounded-lg shadow">
