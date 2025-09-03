@@ -1,6 +1,6 @@
 # AI Health Consultation System
 
-# **ngrok Usage**
+# **ngrok Usage (Under Development)**
 ### **Purpose:** Development tunnel for Twilio webhook testing
 
 **ngrok** is used to create a secure tunnel to localhost for:
@@ -27,7 +27,7 @@ NEXT_PUBLIC_SERVER_URL=your_production_url_or_ngrok_url
 Ensure you have the following installed:
 - **Node.js** (Latest LTS version)
 - **Firebase CLI**
-- **Twilio Account & API Key**
+- **Twilio Account & API Key (Under Development)**
 - **Google Gemini API Key**
 
 ### **Clone the Repository**
